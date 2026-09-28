@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="MarlerZ1 — game-ready 3D, 2D and other assets.">
+  <title>MarlerZ1 — Portfolio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Home">
+      <span class="brand-mark">M</span>
+      <span id="brand-name">MarlerZ1</span>
+    </a>
+
+    <nav>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-glow"></div>
+
+      <div class="hero-content">
+        <p class="eyebrow">GAME ASSETS • 3D • 2D</p>
+        <h1 id="hero-title"></h1>
+        <p id="hero-text" class="hero-text"></p>
+
+        <div class="hero-actions">
+          <a class="button primary" href="#portfolio">View portfolio</a>
+          <a class="button ghost" href="#contact">Contact</a>
+        </div>
+      </div>
+
+      <div class="hero-emblem" aria-hidden="true">
+        <div class="emblem-ring"></div>
+        <div class="emblem-core">M</div>
+      </div>
+    </section>
+
+    <section id="portfolio" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SELECTED WORK</p>
+          <h2>Portfolio</h2>
+        </div>
+        <p class="muted">Images and YouTube videos can be added from one config file.</p>
+      </div>
+
+      <div id="project-grid" class="project-grid"></div>
+    </section>
+
+    <section id="about" class="section split">
+      <div>
+        <p class="eyebrow">ABOUT</p>
+        <h2 id="about-title"></h2>
+      </div>
+      <p id="about-text" class="about-text"></p>
+    </section>
+
+    <section id="contact" class="section contact">
+      <p class="eyebrow">CONTACT</p>
+      <h2>Get in touch</h2>
+      <p class="muted">Questions about an asset, licensing, or support?</p>
+      <div id="contact-links" class="contact-links"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© <span id="year"></span> <span id="footer-name"></span></span>
+    <span class="muted">Static GitHub Pages portfolio.</span>
+  </footer>
+
+  <dialog id="project-dialog">
+    <button id="dialog-close" class="dialog-close" aria-label="Close">×</button>
+
+    <div id="gallery" class="gallery">
+      <button id="gallery-prev" class="gallery-arrow gallery-prev" aria-label="Previous media">‹</button>
+
+      <div id="media-stage" class="media-stage">
+        <img id="dialog-image" alt="">
+        <div id="video-wrap" class="video-wrap" hidden>
+          <iframe
+            id="dialog-video"
+            title="YouTube video"
+            src=""
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+
+      <button id="gallery-next" class="gallery-arrow gallery-next" aria-label="Next media">›</button>
+      <div id="gallery-counter" class="gallery-counter"></div>
+    </div>
+
+    <div class="dialog-content">
+      <h3 id="dialog-title"></h3>
+      <p id="dialog-description"></p>
+      <div id="dialog-tags" class="tags"></div>
+      <div id="dialog-links" class="dialog-links"></div>
+    </div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
