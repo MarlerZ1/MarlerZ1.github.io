@@ -32,10 +32,7 @@ SITE.links.forEach((item) => {
 const grid = $("#project-grid");
 const dialog = $("#project-dialog");
 const gallery = $("#gallery");
-const mediaStage = $("#media-stage");
-const dialogImage = $("#dialog-image");
-const videoWrap = $("#video-wrap");
-const dialogVideo = $("#dialog-video");
+const mediaTrack = $("#media-track");
 const galleryPrev = $("#gallery-prev");
 const galleryNext = $("#gallery-next");
 const galleryCounter = $("#gallery-counter");
@@ -46,14 +43,12 @@ const dialogLinks = $("#dialog-links");
 
 let activeMedia = [];
 let activeMediaIndex = 0;
-let mediaSwitching = false;
 
 function normalizeMedia(project) {
   if (Array.isArray(project.media)) {
     return project.media.filter((item) => item && item.src);
   }
 
-  // Backwards compatibility with older config format.
   if (Array.isArray(project.images)) {
     return project.images
       .filter(Boolean)
@@ -70,7 +65,6 @@ function normalizeMedia(project) {
 function getYouTubeId(input) {
   if (!input) return "";
 
-  // Plain 11-character YouTube video ID
   if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
     return input;
   }
@@ -93,7 +87,7 @@ function getYouTubeId(input) {
 
       return url.searchParams.get("v") || "";
     }
-  } catch (e) {
+  } catch (_) {
     return "";
   }
 
@@ -102,14 +96,12 @@ function getYouTubeId(input) {
 
 function youtubeEmbedUrl(input) {
   const id = getYouTubeId(input);
-  if (!id) return "";
-  return `https://www.youtube-nocookie.com/embed/${id}?rel=0`;
+  return id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : "";
 }
 
 function youtubeThumbnail(input) {
   const id = getYouTubeId(input);
-  if (!id) return "";
-  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : "";
 }
 
 function makeTags(tags) {
@@ -125,12 +117,47 @@ function makeTags(tags) {
   return fragment;
 }
 
-function stopVideo() {
-  dialogVideo.src = "";
+function stopAllVideos() {
+  mediaTrack.querySelectorAll("iframe").forEach((iframe) => {
+    iframe.src = iframe.dataset.src || "";
+  });
 }
 
-function renderMedia() {
-  stopVideo();
+function createMediaSlide(item, projectTitle, index) {
+  const slide = document.createElement("div");
+  slide.className = "media-slide";
+
+  const type = (item.type || "image").toLowerCase();
+
+  if (type === "youtube") {
+    const wrap = document.createElement("div");
+    wrap.className = "video-wrap";
+
+    const iframe = document.createElement("iframe");
+    iframe.title = `${projectTitle} — video ${index + 1}`;
+    iframe.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allowFullscreen = true;
+
+    const src = youtubeEmbedUrl(item.src);
+    iframe.dataset.src = src;
+    iframe.src = src;
+
+    wrap.appendChild(iframe);
+    slide.appendChild(wrap);
+  } else {
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = `${projectTitle} — image ${index + 1}`;
+    img.loading = "eager";
+    slide.appendChild(img);
+  }
+
+  return slide;
+}
+
+function renderGallery(projectTitle) {
+  mediaTrack.innerHTML = "";
 
   if (activeMedia.length === 0) {
     gallery.hidden = true;
@@ -139,89 +166,42 @@ function renderMedia() {
 
   gallery.hidden = false;
 
-  const item = activeMedia[activeMediaIndex];
-  const type = (item.type || "image").toLowerCase();
+  activeMedia.forEach((item, index) => {
+    mediaTrack.appendChild(createMediaSlide(item, projectTitle, index));
+  });
 
-  if (type === "youtube") {
-    dialogImage.hidden = true;
-    videoWrap.hidden = false;
-
-    const embed = youtubeEmbedUrl(item.src);
-    dialogVideo.src = embed;
-  } else {
-    videoWrap.hidden = true;
-    dialogImage.hidden = false;
-
-    dialogImage.src = item.src;
-    dialogImage.alt = `${dialogTitle.textContent} — image ${activeMediaIndex + 1}`;
-  }
+  activeMediaIndex = 0;
+  updateSlider(false);
 
   const hasSeveral = activeMedia.length > 1;
-
   galleryPrev.disabled = !hasSeveral;
   galleryNext.disabled = !hasSeveral;
-
   galleryCounter.hidden = !hasSeveral;
-  galleryCounter.textContent =
-    `${activeMediaIndex + 1} / ${activeMedia.length}`;
 }
 
-async function changeMedia(direction) {
-  if (activeMedia.length < 2 || mediaSwitching) return;
-
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (reduceMotion) {
-    activeMediaIndex =
-      (activeMediaIndex + direction + activeMedia.length) % activeMedia.length;
-    renderMedia();
-    return;
+function updateSlider(animated = true) {
+  if (!animated) {
+    const oldTransition = mediaTrack.style.transition;
+    mediaTrack.style.transition = "none";
+    mediaTrack.style.transform = `translateX(-${activeMediaIndex * 100}%)`;
+    mediaTrack.offsetHeight;
+    mediaTrack.style.transition = oldTransition;
+  } else {
+    mediaTrack.style.transform = `translateX(-${activeMediaIndex * 100}%)`;
   }
 
-  mediaSwitching = true;
-
-  const exitX = direction > 0 ? -34 : 34;
-  const enterX = direction > 0 ? 34 : -34;
-
-  try {
-    const exitAnimation = mediaStage.animate(
-      [
-        { opacity: 1, transform: "translateX(0) scale(1)", filter: "blur(0px)" },
-        { opacity: 0, transform: `translateX(${exitX}px) scale(.985)`, filter: "blur(2px)" }
-      ],
-      {
-        duration: 180,
-        easing: "cubic-bezier(.4, 0, 1, 1)",
-        fill: "forwards"
-      }
-    );
-
-    await exitAnimation.finished;
-
-    activeMediaIndex =
-      (activeMediaIndex + direction + activeMedia.length) % activeMedia.length;
-
-    renderMedia();
-
-    const enterAnimation = mediaStage.animate(
-      [
-        { opacity: 0, transform: `translateX(${enterX}px) scale(.985)`, filter: "blur(2px)" },
-        { opacity: 1, transform: "translateX(0) scale(1)", filter: "blur(0px)" }
-      ],
-      {
-        duration: 260,
-        easing: "cubic-bezier(.16, 1, .3, 1)",
-        fill: "both"
-      }
-    );
-
-    await enterAnimation.finished;
-  } catch (_) {
-    // If the animation is interrupted, make sure the media stays usable.
-    mediaStage.getAnimations().forEach((animation) => animation.cancel());
-  } finally {
-    mediaSwitching = false;
+  if (activeMedia.length > 1) {
+    galleryCounter.textContent = `${activeMediaIndex + 1} / ${activeMedia.length}`;
   }
+}
+
+function changeMedia(direction) {
+  if (activeMedia.length < 2) return;
+
+  activeMediaIndex =
+    (activeMediaIndex + direction + activeMedia.length) % activeMedia.length;
+
+  updateSlider(true);
 }
 
 function openProject(project) {
@@ -245,9 +225,8 @@ function openProject(project) {
   });
 
   activeMedia = normalizeMedia(project);
-  activeMediaIndex = 0;
+  renderGallery(project.title);
 
-  renderMedia();
   dialog.showModal();
 }
 
@@ -336,11 +315,11 @@ galleryNext.addEventListener("click", (e) => {
 });
 
 $("#dialog-close").addEventListener("click", () => {
-  stopVideo();
+  stopAllVideos();
   dialog.close();
 });
 
-dialog.addEventListener("close", stopVideo);
+dialog.addEventListener("close", stopAllVideos);
 
 dialog.addEventListener("click", (e) => {
   const rect = dialog.getBoundingClientRect();
@@ -352,7 +331,7 @@ dialog.addEventListener("click", (e) => {
     e.clientY <= rect.bottom;
 
   if (!inside) {
-    stopVideo();
+    stopAllVideos();
     dialog.close();
   }
 });

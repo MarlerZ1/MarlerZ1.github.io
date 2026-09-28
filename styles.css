@@ -325,41 +325,45 @@ dialog::backdrop {
   position: relative;
   min-height: 280px;
   background: #09090d;
+  overflow: hidden;
 }
 
-.media-stage {
+.media-viewport {
+  width: 100%;
+  overflow: hidden;
+  background: #09090d;
+}
+
+.media-track {
+  display: flex;
+  width: 100%;
+  transform: translateX(0);
+  transition: transform .42s cubic-bezier(.22, .61, .36, 1);
+  will-change: transform;
+}
+
+.media-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
   display: grid;
   place-items: center;
-  width: 100%;
-  min-height: 280px;
-  transform-origin: center center;
-  will-change: transform, opacity, filter;
+  background: #09090d;
 }
 
-.media-stage > * {
-  backface-visibility: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .media-stage {
-    will-change: auto;
-  }
-}
-
-#dialog-image {
+.media-slide img {
   width: 100%;
   max-height: 620px;
   object-fit: contain;
   background: #09090d;
 }
 
-.video-wrap {
+.media-slide .video-wrap {
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #000;
 }
 
-.video-wrap iframe {
+.media-slide .video-wrap iframe {
   width: 100%;
   height: 100%;
   border: 0;
@@ -384,15 +388,19 @@ dialog::backdrop {
   line-height: 1;
   cursor: pointer;
   backdrop-filter: blur(8px);
+  transition: background .16s ease, transform .16s ease, border-color .16s ease;
 }
 
-.gallery-arrow { transition: background .16s ease, transform .16s ease, border-color .16s ease; }
-.gallery-arrow:hover { background: rgba(35,17,24,.9); border-color: rgba(255,255,255,.24); }
-.gallery-prev:hover { transform: translateY(-50%) translateX(-2px); }
-.gallery-next:hover { transform: translateY(-50%) translateX(2px); }
+.gallery-arrow:hover {
+  background: rgba(35,17,24,.9);
+  border-color: rgba(255,255,255,.24);
+}
+
 .gallery-arrow:disabled { display: none; }
 .gallery-prev { left: 14px; }
 .gallery-next { right: 14px; }
+.gallery-prev:hover { transform: translateY(-50%) translateX(-2px); }
+.gallery-next:hover { transform: translateY(-50%) translateX(2px); }
 
 .gallery-counter {
   position: absolute;
@@ -407,6 +415,12 @@ dialog::backdrop {
   color: #dddde5;
   font-size: 12px;
   backdrop-filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-track {
+    transition: none;
+  }
 }
 
 .dialog-content { padding: 26px; }
