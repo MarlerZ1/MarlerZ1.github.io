@@ -77,7 +77,7 @@ const SITE = {
         // { type: "youtube", src: "dQw4w9WgXcQ" },
       ],
 
-      tags: ["3D", "PBR", "Weapons", "Game Ready"],
+      tags: ["3D", "PBR", "Cel Shading", "Environment", "Animation"],
 
       links: [
         // { label: "Fab", url: "https://..." },
